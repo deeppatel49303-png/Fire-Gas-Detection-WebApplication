@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SafeGuard Dashboard</title>
+</head>
+<body style="background:#111; color:#ddd; font-family:Arial, sans-serif; margin:0;">
+
+<!-- LOGIN PAGE -->
+<div id="pg-login" class="page on" style="display:block;">
+  <div style="max-width:400px; margin:80px auto; background:linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('f1.jpg') center/cover no-repeat; border:1px solid #444; border-radius:10px; padding:36px;">
+    <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:14px;">
+      <svg width="90" height="90" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M100 25 L165 55 L150 135 Q100 170 50 135 L35 55 Z"fill="#111827"/>
+
+        <!-- Inner border -->
+       <path d="M100 35 L155 60 L140 130 Q100 160 60 130 L45 60 Z"fill="none" stroke="#3b82f6" stroke-width="3"/>
+
+        <!-- SG -->
+       <text x="100" y="110" text-anchor="middle"
+         fill="#3b82f6" font-size="50"
+         font-family="Verdana" font-weight="bold">
+         SG
+       </text>
+      </svg>
+
+
+
+
+    <h2 style="margin:0; color:#00ccff; font-size:24px; letter-spacing:1px;">SafeGuard</h2>
+    </div>
+    <p style="text-align:center; color:#888; font-size:12px; margin-bottom:24px; letter-spacing:2px;">IOT SAFETY SYSTEM</p>
+
+    <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">Username</label>
+    <input id="user" type="text" placeholder="admin" style="background:#222; border:1px solid #444; color:#ddd; padding:8px; width:100%; box-sizing:border-box; border-radius:4px; margin-bottom:10px;">
+
+    <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">Password</label>
+    <input id="pass" type="password" placeholder="admin123" style="background:#222; border:1px solid #444; color:#ddd; padding:8px; width:100%; box-sizing:border-box; border-radius:4px; margin-bottom:10px;">
+
+    <p style="font-size:12px; color:#888; margin-bottom:8px;">ESP32 Sensor IP</p>
+    <input id="sip" type="text" placeholder="192.168.1.100" style="background:#222; border:1px solid #444; color:#ddd; padding:8px; width:100%; box-sizing:border-box; border-radius:4px; margin-bottom:10px;">
+
+    <p style="font-size:12px; color:#888; margin-bottom:8px;">ESP32-CAM IP</p>
+    <input id="cip" type="text" placeholder="192.168.1.101" style="background:#222; border:1px solid #444; color:#ddd; padding:8px; width:100%; box-sizing:border-box; border-radius:4px; margin-bottom:10px;">
+
+    <div id="lerr" style="color:#ff3355; font-size:12px; margin-bottom:8px; display:none;">Wrong username or password.</div>
+    <button onclick="doLogin()" style="width:100%; margin-top:4px; padding:9px 18px; background:#5533aa; border:none; color:#fff; border-radius:4px; cursor:pointer;">LOGIN</button>
+    <p style="text-align:center; font-size:11px; color:#555; margin-top:12px;">Default: admin / admin123</p>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="pg-dash" class="page" style="display:none;">
+  <!-- Nav Bar -->
+  <div class="nav" style="background:#1a1a2e; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #333;">
+    <span style="display:flex; align-items:center; gap:8px; color:#00ccff; font-weight:bold; letter-spacing:2px;">
+      <svg width="90" height="90" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+       <path d="M100 25 L165 55 L150 135 Q100 170 50 135 L35 55 Z"fill="#111827"/>
+
+        <!-- Inner border -->
+       <path d="M100 35 L155 60 L140 130 Q100 160 60 130 L45 60 Z"fill="none" stroke="#3b82f6" stroke-width="3"/>
+
+        <!-- SG -->
+       <text x="100" y="110" text-anchor="middle"
+         fill="#3b82f6" font-size="50"
+         font-family="Verdana" font-weight="bold">
+         SG
+       </text>
+      </svg>
+      SAFEGUARD
+    </span>
+    <div>
+      <button class="tab" onclick="go('home', this)" style="background:transparent; border:1px solid #444; color:#aaa; margin-right:5px; padding:9px 18px; border-radius:4px; cursor:pointer;">Home</button>
+      <button class="tab on" onclick="go('gas', this)" style="background:rgba(0,200,255,0.07); border:1px solid #00ccff; color:#00ccff; margin-right:5px; padding:9px 18px; border-radius:4px; cursor:pointer;">Gas</button>
+      <button class="tab" onclick="go('fire', this)" style="background:transparent; border:1px solid #444; color:#aaa; margin-right:5px; padding:9px 18px; border-radius:4px; cursor:pointer;">Fire</button>
+      <button class="tab" onclick="go('cam', this)" style="background:transparent; border:1px solid #444; color:#aaa; padding:9px 18px; border-radius:4px; cursor:pointer;">Camera</button>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="color:#888; font-size:12px;">Status: <span id="cst" style="color:#00ff99;">Waiting...</span></span>
+      <span id="clk" style="color:#00ccff; font-size:13px; font-family:monospace;"></span>
+      <button onclick="doLogout()" style="background:transparent; border:1px solid #555; color:#aaa; padding:5px 10px; font-size:11px;">Logout</button>
+    </div>
+  </div>
+
+  <!-- HOME TAB -->
+  <div id="s-home" class="sec" style="display:none; padding:20px;">
+    <h3 style="color:#888; font-size:24px; letter-spacing:3px; margin-bottom:14px;">HOME</h3>
+    <div style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:20px; margin-bottom:14px;">
+      <p style="color:#ddd; font-size:20px; line-height:1.6; margin-bottom:12px;">Welcome to SafeGuard — your IoT safety dashboard for real-time gas, fire and camera monitoring. This system is designed to help you stay aware of critical conditions, protect your space, and respond quickly to emergencies.</p>
+      <div style="display:grid; gap:12px;">
+        <div style="background:#0d0d1a; border:1px solid #2a2a3e; border-radius:8px; padding:14px;">
+          <div style="font-size:15px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;">System summary</div>
+          <p style="font-size:15px; color:#ddd; margin:0;">Monitor gas levels with MQ-2, detect flames with a KY-026 sensor, and view live ESP32-CAM footage. SafeGuard keeps all critical alerts in one unified dashboard.</p>
+        </div>
+        <div style="background:#0d0d1a; border:1px solid #2a2a3e; border-radius:8px; padding:14px;">
+          <div style="font-size:15px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;">Key features</div>
+          <ul style="font-size:15px; color:#ddd; margin:0; padding-left:18px; line-height:1.6;">
+            <li>Live gas concentration and danger warnings</li>
+            <li>Flame detection plus automatic SMS alerts</li>
+            <li>ESP32-CAM streaming for remote visual checks</li>
+            <li>Manual valve control and GPS status overview</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px;">
+        <div style="font-size:15px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Why SafeGuard?</div>
+        <p style="font-size:15px; color:#ddd; margin:0; line-height:1.6;">Fast notifications, clear visuals, and a secure interface make it easier to act before a situation becomes dangerous. Use it for home, lab, or remote IoT security projects.</p>
+      </div>
+      <div style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px;">
+        <div style="font-size:15px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;">Quick tips</div>
+        <ol style="font-size:15px; color:#ddd; margin:0; padding-left:18px; line-height:1.6;">
+          <li>Keep ESP32 devices powered and connected</li>
+          <li>Verify IP addresses for sensor and camera devices</li>
+          <li>Test emergency alerts regularly</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div style="background:#0d0d1a; padding:5px 20px; font-size:11px; color:#666; border-bottom:1px solid #222; display:flex; gap:20px; flex-wrap:wrap;">
+    <span>Last update: <b id="upt" style="color:#ddd;">--</b></span>
+    <span>GPS: <b id="gbar" style="color:#ddd;">--</b></span>
+    <span>Valve: <b id="vsbar" style="color:#ddd;">--</b></span>
+  </div>
+
+  
+
+  <!-- GAS TAB -->
+  <div id="s-gas" class="sec on" style="display:block; padding:20px;">
+    <h3 style="color:#888; font-size:15px; letter-spacing:3px; margin-bottom:14px;">GAS MONITOR (MQ-2 SENSOR)</h3>
+
+    <div id="gc" class="card" style="background:#1a1a2e; border:1px solid #333; border-left:4px solid #00ff99; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="background:#2a1a55; color:#00ccff; font-size:15px; padding:3px 8px; border-radius:4px; letter-spacing:2px;">MQ-2</span>
+        <span style="font-size:12px; color:#888;">Gas Sensor</span>
+      </div>
+      <div class="big" id="gv" style="font-size:48px; font-weight:bold; color:#00ff99;">---</div>
+      <div style="font-size:12px; color:#888;">PPM</div>
+      <div class="bar-bg" style="background:#333; height:8px; border-radius:4px; margin:8px 0;"><div class="bar-fill" id="gf" style="height:8px; border-radius:4px; background:#00ff99; width:0%; transition:width 0.5s;"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:#555; margin-bottom:8px;">
+        <span>0</span><span>200 WARN</span><span>400</span>
+      </div>
+      <div id="gst" style="font-size:12px;"></div>
+    </div>
+
+    <!-- Gas Chart -->
+    <div class="panel" style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <div style="font-size:15px; color:#888; letter-spacing:2px; margin-bottom:10px; text-transform:uppercase;">Gas History (last 20 readings)</div>
+      <canvas id="gch" style="width:100%; height:120px; display:block;"></canvas>
+    </div>
+
+    <!-- Valve + GPS in two columns -->
+    <div class="two" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="panel" style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px; margin-bottom:14px;">
+        <div style="font-size:12px; color:#888; letter-spacing:2px; margin-bottom:12px; text-transform:uppercase;">Valve Control</div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+          <span id="vicon" style="font-size:28px;">💧</span>
+          <div>
+            <div id="vstate" style="font-family:monospace; font-size:16px; color:#00ff99; letter-spacing:2px;">OPEN</div>
+            <div id="vsub" style="font-size:10px; color:#888; margin-top:2px;">Gas flowing</div>
+          </div>
+        </div>
+        <div>
+          <button class="vbtn vclose" style="padding:9px 16px; margin-right:6px; border-radius:4px; border:none; cursor:pointer; font-weight:bold; background:#cc2244; color:#fff;">🔒 Close</button>
+          <button class="vbtn vopen" style="padding:9px 16px; margin-right:6px; border-radius:4px; border:none; cursor:pointer; font-weight:bold; background:#00cc77; color:#000;">💧 Open</button>
+        </div>
+        <p style="font-size:10px; color:#666; margin-top:10px; border-top:1px solid #2a2a3e; padding-top:8px;">Manual override. Auto-closes on gas danger.</p>
+      </div>
+
+      <div class="panel" style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px; margin-bottom:14px;">
+        <div style="font-size:10px; color:#888; letter-spacing:2px; margin-bottom:12px; text-transform:uppercase;">GPS Location</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+          <div style="background:#0d0d1a; border:1px solid #2a2a3e; border-radius:6px; padding:10px;">
+            <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">Latitude</label>
+            <b id="glat" style="color:#00ccff; font-size:12px;">--</b>
+          </div>
+          <div style="background:#0d0d1a; border:1px solid #2a2a3e; border-radius:6px; padding:10px;">
+            <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">Longitude</label>
+            <b id="glon" style="color:#00ccff; font-size:12px;">--</b>
+          </div>
+        </div>
+        <div style="font-size:11px; color:#888; margin-bottom:10px;" id="gloc">Location: --</div>
+        <a id="maplink" href="#" target="_blank" style="color:#00ccff; font-size:11px; border:1px solid #1a4466; padding:7px 14px; border-radius:6px; text-decoration:none;">📍 Open Map</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIRE TAB -->
+  <div id="s-fire" class="sec" style="display:none; padding:20px;">
+    <h3 style="color:#888; font-size:11px; letter-spacing:3px; margin-bottom:14px;">FIRE MONITOR (KY-026 SENSOR)</h3>
+
+    <div id="fc" class="card" style="background:#1a1a2e; border:1px solid #333; border-left:4px solid #00ff99; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="background:#2a1a55; color:#00ccff; font-size:10px; padding:3px 8px; border-radius:4px; letter-spacing:2px;">KY-026</span>
+        <span style="font-size:10px; color:#888;">Flame Sensor</span>
+      </div>
+      <div class="big" id="fv" style="font-size:48px; font-weight:bold; color:#00ff99;">---</div>
+      <div style="font-size:12px; color:#888;">Raw value (lower = more flame)</div>
+      <div class="bar-bg" style="background:#333; height:8px; border-radius:4px; margin:8px 0;"><div class="bar-fill" id="ff" style="height:8px; border-radius:4px; background:#00ff99; width:0%; transition:width 0.5s;"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:10px; color:#555; margin-bottom:8px;">
+        <span>0 (fire)</span><span>512</span><span>1023 (safe)</span>
+      </div>
+      <div id="fst" style="font-size:12px;"></div>
+    </div>
+
+    <div class="panel" style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <div style="font-size:10px; color:#888; letter-spacing:2px; margin-bottom:10px; text-transform:uppercase;">SMS Alert Info</div>
+      <div style="background:#0d0d1a; border:1px solid #2a2a3e; border-radius:6px; padding:12px;">
+        <p style="font-size:12px; color:#888; margin-bottom:6px;">📱 Automatic SMS is sent when flame danger is detected.</p>
+        <p style="font-size:12px; color:#888; margin-bottom:6px;">📡 Uses SIM800L GSM module on ESP32.</p>
+        <p style="font-size:12px; color:#888;">⚠ Make sure GSM antenna is connected and SIM has balance.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMERA TAB -->
+  <div id="s-cam" class="sec" style="display:none; padding:20px;">
+    <h3 style="color:#888; font-size:11px; letter-spacing:3px; margin-bottom:14px;">CAMERA (ESP32-CAM)</h3>
+
+    <div class="camwrap" style="margin-bottom:12px; background:#000; border:1px solid #333; border-radius:8px; position:relative; min-height:340px; overflow:hidden;">
+      <img id="camimg" src="" alt="Camera feed will appear here" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:8px;">
+      <canvas id="movcanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+      <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ddd; font-size:14px; letter-spacing:1px; text-transform:uppercase; pointer-events:none;">tap to start live</div>
+      <span style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); font-size:10px; padding:4px 10px; border:1px solid #333; border-radius:4px; color:#ddd;">LIVE</span>
+      <span id="crec" style="position:absolute; top:10px; right:10px; color:#ff3355; font-size:10px; letter-spacing:2px;">🔴 LIVE</span>
+    </div>
+
+    <div style="font-size:10px; color:#888; margin-bottom:10px;" id="curl">Stream URL: --</div>
+
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <button style="background:#1a1a2e; border:1px solid #444; color:#aaa;">🔄 Reload</button>
+      <button style="padding:9px 18px; background:#5533aa; border:none; color:#fff; border-radius:4px; cursor:pointer;">📷 Snapshot</button>
+      <button id="rbtn" style="padding:9px 18px; background:#5533aa; border:none; color:#fff; border-radius:4px; cursor:pointer;">⏺ Record</button>
+    </div>
+
+    <!-- Pan & Tilt -->
+<div class="panel" style="background:#1a1a2e; border:1px solid #333; border-radius:8px; padding:16px; margin-bottom:14px;">
+      <div style="font-size:10px; color:#888; letter-spacing:2px; margin-bottom:12px; text-transform:uppercase;">Pan & Tilt Control</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">Pan angle: <b id="panv" style="color:#9966dd;">90°</b></label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:11px; color:#555;">0°</span>
+          <input type="range" id="pan" min="0" max="180" value="90" style="flex:1; accent-color:#9966dd;">
+          <span style="font-size:11px; color:#555;">180°</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px; color:#888; display:block; margin-bottom:4px;">Tilt angle: <b id="tiltv" style="color:#9966dd;">90°</b></label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:11px; color:#555;">0°</span>
+          <input type="range" id="tilt" min="0" max="180" value="90" style="flex:1; accent-color:#9966dd;">
+          <span style="font-size:11px; color:#555;">180°</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <span style="font-size:10px; color:#888; letter-spacing:2px;">PRESETS: </span>
+        <button style="background:#1a1a2e; border:1px solid #553399; color:#aaa; margin:3px; padding:5px 10px; font-size:11px;">Center</button>
+        <button style="background:#1a1a2e; border:1px solid #553399; color:#aaa; margin:3px; padding:5px 10px; font-size:11px;">Left</button>
+        <button style="background:#1a1a2e; border:1px solid #553399; color:#aaa; margin:3px; padding:5px 10px; font-size:11px;">Right</button>
+        <button style="background:#1a1a2e; border:1px solid #553399; color:#aaa; margin:3px; padding:5px 10px; font-size:11px;">Up</button>
+        <button style="background:#1a1a2e; border:1px solid #553399; color:#aaa; margin:3px; padding:5px 10px; font-size:11px;">Down</button>
+      </div>
+
+      <div id="ptst" style="font-size:11px; color:#888; border-top:1px solid #2a2a3e; padding-top:8px;">Pan/Tilt status will show here.</div>
+    </div>
+  </div>
+
+</div><!-- end pg-dash -->
+
+<script>
+function get(id) { return document.getElementById(id); }
+function doLogin() {
+  var user = get("user").value.trim();
+  var pass = get("pass").value;
+  if (user !== "admin" || pass !== "admin123") {
+    get("lerr").style.display = "block";
+    return;
+  }
+  get("lerr").style.display = "none";
+  get("pg-login").style.display = "none";
+  get("pg-dash").style.display = "block";
+}
+function go(tabId, btn) {
+  document.querySelectorAll('.sec').forEach(function(sec) {
+    sec.style.display = 'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.style.background = 'transparent';
+    tab.style.border = '1px solid #444';
+    tab.style.color = '#aaa';
+  });
+  document.getElementById('s-' + tabId).style.display = 'block';
+  btn.style.background = 'rgba(0,200,255,0.07)';
+  btn.style.border = '1px solid #00ccff';
+  btn.style.color = '#00ccff';
+}
+function doLogout() {
+  get("pg-dash").style.display = "none";
+  get("pg-login").style.display = "block";
+  get("pass").value = "";
+}
+get("pass").addEventListener("keydown", function(e) { if (e.key === "Enter") doLogin(); });
+</script>
+
+</body>
+</html>
